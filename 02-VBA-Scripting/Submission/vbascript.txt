@@ -1,0 +1,144 @@
+Sub Stocks()
+    
+    Dim ws As Worksheet
+    
+    'Loop through each work sheet
+    For Each ws In Worksheets
+        
+        'Variable for holding the stock
+        Dim stock As String
+        
+        'Variable for stock volume
+        Dim stockVolume As Double
+        stockVolume = 0
+        
+        'Stock open and close
+        Dim stockOpen As Double
+        Dim stockClose As Double
+        Dim yearlyChange As Double
+        Dim percentChange As Double
+        
+        stockOpen = ws.Cells(2, 3).Value
+        
+        'Keep track of stocks in a summary table
+        Dim sumTableRow As Integer
+        sumTableRow = 2
+        
+        'finding the last filled cell in the first column
+        Dim lastRow As Long
+        lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        'Loop through all the stock prices
+        For i = 2 To lastRow
+        
+            'Make sure it's still the same stock, if not move on
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1) Then
+                
+                'Set the stock name
+                stock = ws.Cells(i, 1).Value
+                
+                'Total Volume
+                stockVolume = stockVolume + ws.Cells(i, 7).Value
+                
+                'Close price
+                stockClose = ws.Cells(i, 6).Value
+                
+                'Yearly Change
+                yearlyChange = stockClose - stockOpen
+                
+                'Percent Change
+                If stockOpen > 0 Then
+                    perchentChange = yearlyChange / stockOpen
+                Else
+                    percentChange = 0
+                End If
+                
+                'Print to summary table
+                ws.Cells(sumTableRow, 9).Value = stock
+                ws.Cells(sumTableRow, 10).Value = stockVolume
+                ws.Cells(sumTableRow, 11).Value = yearlyChange
+                ws.Cells(sumTableRow, 12).Value = percentChange
+                
+                'Color coding
+                If yearlyChange < 0 Then
+                    ws.Cells(sumTableRow, 10).Interior.ColorIndex = 3
+                Else
+                    ws.Cells(sumTableRow, 10).Interior.ColorIndex = 4
+                End If
+                
+                
+                'Resets
+                'add to the summary table
+                sumTableRow = sumTableRow + 1
+                
+                'reset stock total
+                stockVolume = 0
+                percentChange = 0
+                
+                'reset stock open
+                stockOpen = ws.Cells(i + 1, 3).Value
+                
+            'if the stock is the same stock
+            Else
+                'add to total volume
+                stockVolume = stockVolume + ws.Cells(i, 7).Value
+                
+            End If
+            
+        Next i
+        
+        'style column
+        ws.Range("K:K").NumberFormat = "0.00%"
+        
+        
+        'BONUS
+        Dim perIncTicker As String
+        Dim perDecTicker As String
+        Dim totalVolTicker As String
+        
+        Dim percInc As Double
+        Dim percDec As Double
+        Dim totalVol As Double
+        
+        'set
+        percInc = -9999999
+        percDec = 9999999
+        totalVol = -9999999
+        
+        Dim lastRow2 As Long
+        lastRow2 = ws.Cells(Rows.Count, 9).End(xlUp).Row
+        
+        'Loop through the summary table
+        For i = 2 To lastRow
+        
+            'found bigger volume
+            If ws.Cells(i, 12).Value > totalVol Then
+                totalVol = ws.Cells(i, 12).Value
+                totalVolTicker = ws.Cells(i, 9).Value
+            End If
+            
+            'found larger percent increase
+            If ws.Cells(i, 11).Value < percDec Then
+                percDec = ws.Cells(i, 11).Value
+                perDecTicker = ws.Cells(i, 9).Value
+            End If
+            
+        Next i
+        
+        'fill in summary table
+        ws.Range("P2").Value = perIncTicker
+        ws.Range("P3").Value = perDecTicker
+        ws.Range("P4").Value = totalVolTicker
+        
+        ws.Range("Q2").Value = percInc
+        ws.Range("Q3").Value = percDec
+        ws.Range("Q4").Value = totalVol
+        
+        'style column
+        ws.Range("Q2:Q3").NumberFormat = "0.00%"
+    Next
+        
+                
+End Sub
+
+
